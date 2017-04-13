@@ -11,7 +11,7 @@ var die = function die(message) {
 var warn = function warn(message) {
     return console.warn(chalk.yellow(message));
 };
-var log = function warn(message) {
+var log = function log(message) {
     return console.log(chalk.green(message));
 };
 
