@@ -1,36 +1,52 @@
-const chalk = require('chalk')
-const fs = require('fs')
-const npm = require('npm')
-const Package = require('./package')
+'use strict';
 
-const die = (message) => console.error(chalk.bold.red(message))
-const warn = (message) => console.warn(chalk.yellow(message))
+var chalk = require('chalk');
+var fs = require('fs');
+var install = require('spawn-npm-install');
+var Package = require('./package');
 
-fs.readFile('package.json', 'utf-8', function(error, contents) {
+var die = function die(message) {
+    return console.error(chalk.bold.red(message));
+};
+var warn = function warn(message) {
+    return console.warn(chalk.yellow(message));
+};
+var log = function warn(message) {
+    return console.log(chalk.green(message));
+};
+
+fs.readFile('package.json', 'utf-8', function (error, contents) {
 
     if (contents === undefined) {
-        return die('There doesn\'t seem to be a package.json here')
+        return die('There doesn\'t seem to be a package.json here');
     }
 
-    let packageContents = new Package(contents)
+    var packageContents = new Package(contents);
 
-    if (! packageContents.isValid()) {
-        return die('Invalid package.json contents')
+    if (!packageContents.isValid()) {
+        return die('Invalid package.json contents');
     }
 
-    if (! packageContents.hasPeerDependencies()) {
-        return warn('This package doesn\'t seem to have any peerDependencies')
+    if (!packageContents.hasPeerDependencies()) {
+        return warn('This package doesn\'t seem to have any peerDependencies');
     }
 
-    let peerDependencies = packageContents.peerDependencies
+    var peerDependencies = packageContents.peerDependencies;
 
-    let packages = Object.keys(peerDependencies).map(function(key) {
-        return `${key}@${peerDependencies[key]}`
-    })
+    var peerInstallOptions = packageContents.peerInstallOptions;
 
-    let peerInstallOptions=packageContents.peerInstallOptions
+    log('Install ' + Object.keys(peerDependencies).length + ' peerDependencies...');
+    var packages = Object.keys(peerDependencies).map(function (key) {
+        var name = key + '@' + peerDependencies[key];
+        return name;
+    });
 
-    npm.load(peerInstallOptions, function() {
-        npm.commands.install(packages)
-    })
-})
+    var installDependencies = function () {
+        var name = packages.shift();
+        install(name, peerInstallOptions, function() {
+            log(name);
+            installDependencies();
+        });
+    }
+    installDependencies();
+});
