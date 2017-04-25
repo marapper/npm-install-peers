@@ -45,7 +45,9 @@ fs.readFile('package.json', 'utf-8', function (error, contents) {
         var name = packages.shift();
         install(name, peerInstallOptions, function() {
             log(name);
-            installDependencies();
+            if (packages.length) {
+                installDependencies();
+            }
         });
     }
     installDependencies();
