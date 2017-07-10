@@ -34,6 +34,7 @@ fs.readFile('package.json', 'utf-8', function (error, contents) {
     var peerDependencies = packageContents.peerDependencies;
 
     var peerInstallOptions = packageContents.peerInstallOptions;
+    peerInstallOptions.noSave = true;
 
     log('Install ' + Object.keys(peerDependencies).length + ' peerDependencies...');
     var packages = Object.keys(peerDependencies).map(function (key) {
